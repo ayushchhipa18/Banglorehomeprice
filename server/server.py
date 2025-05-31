@@ -1,7 +1,13 @@
 from flask import Flask, request, jsonify, render_template
-import util
+from server import util
+
 
 app = Flask(__name__)
+
+
+@app.route("/")
+def home():
+    return "Hello, World!"
 
 
 # Optional: Serve homepage if you have a UI
