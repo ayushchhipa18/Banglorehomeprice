@@ -1,19 +1,13 @@
 from flask import Flask, request, jsonify, render_template
-from server import util
+import util
 
 
 app = Flask(__name__)
 
 
 @app.route("/")
-def home():
-    return "Hello, World!"
-
-
-# Optional: Serve homepage if you have a UI
-@app.route("/")
 def index():
-    return render_template("app.html")  # Make sure this file exists in templates/
+    return render_template("app.html")  # Or index.html — pick one
 
 
 @app.route("/get_location_names", methods=["GET"])
@@ -35,9 +29,7 @@ def predict_home_price():
         bhk = int(request.form["bhk"])
         bath = int(request.form["bath"])
 
-        # Use correct function name: your util.py has get_estimated_price
         estimated_price = util.get_estimated_price(location, total_sqft, bhk, bath)
-
         response = jsonify({"estimated_price": estimated_price})
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
