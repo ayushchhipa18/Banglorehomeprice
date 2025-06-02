@@ -9,46 +9,54 @@ __model = None
 
 
 def get_estimated_price(location, sqft, bhk, bath):
+    if __data_columns is None or __model is None:
+        raise Exception("Artifacts not loaded. Please run load_saved_artifacts() before prediction.")
+
+    location = location.lower()
     try:
         loc_index = __data_columns.index(location)
-
-    except:
+    except ValueError:
         loc_index = -1
 
     x = np.zeros(len(__data_columns))
     x[0] = sqft
     x[1] = bath
     x[2] = bhk
+
     if loc_index >= 0:
         x[loc_index] = 1
 
-    # Convert to DataFrame with correct column names
     x_df = pd.DataFrame([x], columns=__data_columns)
-
-    return round(__model.predict(x_df)[0], 2)
+    predicted_price = __model.predict(x_df)[0]
+    return round(predicted_price, 2)
 
 
 def load_saved_artifacts():
     print("loading saved artifacts...start")
     global __data_columns
     global __locations
+    global __model
 
     with open("server/artifacts/columns.json", "r") as f:
         __data_columns = json.load(f)["data_columns"]
-        __locations = __data_columns[3:]  # first 3 columns are sqft, bath, bhk
+        __locations = [loc.lower() for loc in __data_columns[3:]]  # normalize to lowercase
 
-    global __model
     if __model is None:
         with open("server/artifacts/banglore_home_prices_model.pickle", "rb") as f:
             __model = pickle.load(f)
+
     print("loading saved artifacts...done")
 
 
 def get_location_names():
+    if __locations is None:
+        load_saved_artifacts()
     return __locations
 
 
 def get_data_columns():
+    if __data_columns is None:
+        load_saved_artifacts()
     return __data_columns
 
 
