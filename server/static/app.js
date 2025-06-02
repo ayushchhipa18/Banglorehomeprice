@@ -34,9 +34,17 @@ function onClickedEstimatePrice() {
         bath: bathrooms,
         location: location.value
     }, function (data, status) {
-        console.log(data.estimated_price);
-        estPrice.innerHTML = "<h2>" + data.estimated_price.toString() + " Lakh</h2>";
-        console.log(status);
+        console.log("Server response:", data);
+        if (data && data.estimated_price !== undefined) {
+            estPrice.innerHTML = "<h2>" + data.estimated_price.toString() + " Lakh</h2>";
+        } else {
+            estPrice.innerHTML = "<h2>Price could not be estimated</h2>";
+            console.error("estimated_price is missing in the response");
+        }
+        console.log("Status:", status);
+    }).fail(function (xhr, status, error) {
+        estPrice.innerHTML = "<h2>Error contacting server</h2>";
+        console.error("AJAX failed:", status, error);
     });
 }
 
@@ -45,7 +53,7 @@ function onPageLoad() {
     var url = "/get_location_names";
     $.get(url, function (data, status) {
         console.log("got response for get_location_names request");
-        if (data) {
+        if (data && data.locations) {
             var locations = data.locations;
             var uiLocations = document.getElementById("uiLocations");
             $('#uiLocations').empty();
@@ -54,8 +62,13 @@ function onPageLoad() {
                 var opt = new Option(location);
                 $('#uiLocations').append(opt);
             });
+        } else {
+            console.error("Invalid location data:", data);
         }
+    }).fail(function (xhr, status, error) {
+        console.error("Failed to load location data:", status, error);
     });
 }
 
 window.onload = onPageLoad;
+
